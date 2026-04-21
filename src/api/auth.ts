@@ -60,3 +60,26 @@ export async function sendEmailOtp(email: string) {
   )
   return data
 }
+
+export async function forgotPassword(email: string) {
+  const { data } = await apiClient.post<ApiResponse<{ otp_expires_in: number }>>(
+    '/auth/password/forgot',
+    { email },
+  )
+  return data
+}
+
+export interface ResetPasswordPayload {
+  email: string
+  code: string
+  password: string
+  password_confirmation: string
+}
+
+export async function resetPassword(payload: ResetPasswordPayload) {
+  const { data } = await apiClient.post<ApiResponse<null>>(
+    '/auth/password/reset',
+    payload,
+  )
+  return data
+}

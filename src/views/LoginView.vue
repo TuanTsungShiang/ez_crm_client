@@ -125,10 +125,18 @@ function goVerify() {
         {{ submitting ? '登入中…' : '登入' }}
       </button>
 
-      <p class="pt-2 text-center text-xs text-slate-500">
-        還沒有帳號?
-        <RouterLink to="/register" class="text-blue-600 hover:underline">立即註冊</RouterLink>
-      </p>
+      <div class="flex items-center justify-between pt-2 text-xs text-slate-500">
+        <RouterLink
+          to="/forgot-password"
+          class="text-slate-500 hover:text-slate-700 hover:underline"
+        >
+          忘記密碼?
+        </RouterLink>
+        <span>
+          還沒有帳號?
+          <RouterLink to="/register" class="text-blue-600 hover:underline">立即註冊</RouterLink>
+        </span>
+      </div>
     </form>
   </section>
 </template>
