@@ -28,7 +28,9 @@ function logout() {
             </RouterLink>
           </template>
           <template v-else>
-            <span class="text-slate-500">Hi, {{ auth.member?.name }}</span>
+            <RouterLink to="/me" class="text-slate-600 hover:text-slate-900">
+              Hi, {{ auth.member?.name }}
+            </RouterLink>
             <button
               type="button"
               class="text-slate-600 hover:text-slate-900"
