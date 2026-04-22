@@ -83,3 +83,12 @@ export async function resetPassword(payload: ResetPasswordPayload) {
   )
   return data
 }
+
+export type OAuthProvider = 'google' | 'github' | 'line' | 'discord'
+
+export async function getOAuthRedirectUrl(provider: OAuthProvider) {
+  const { data } = await apiClient.get<ApiResponse<{ url: string }>>(
+    `/auth/oauth/${provider}/redirect`,
+  )
+  return data
+}

@@ -5,6 +5,7 @@ import { AxiosError } from 'axios'
 import { login } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 import { ApiCode, type ApiError } from '@/api/types'
+import OAuthButtons from '@/components/OAuthButtons.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -138,5 +139,9 @@ function goVerify() {
         </span>
       </div>
     </form>
+
+    <div class="mt-6 border-t border-slate-200 pt-6">
+      <OAuthButtons mode="login" />
+    </div>
   </section>
 </template>
