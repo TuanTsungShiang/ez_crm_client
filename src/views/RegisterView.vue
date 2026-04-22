@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AxiosError } from 'axios'
 import DynamicForm from '@/components/DynamicForm.vue'
+import OAuthButtons from '@/components/OAuthButtons.vue'
 import {
   getRegisterSchema,
   register,
@@ -117,6 +118,13 @@ async function handleSubmit() {
           隱私權
         </a>
       </p>
+
+      <div class="mt-6 border-t border-slate-200 pt-6">
+        <OAuthButtons
+          v-if="schema.oauth_providers.length > 0"
+          mode="register"
+        />
+      </div>
     </div>
   </section>
 </template>
