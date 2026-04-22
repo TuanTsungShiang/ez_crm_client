@@ -5,7 +5,8 @@ import RegisterView from '@/views/RegisterView.vue'
 import VerifyEmailView from '@/views/VerifyEmailView.vue'
 import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
 import ResetPasswordView from '@/views/ResetPasswordView.vue'
-import { redirectIfAuth } from './guards'
+import MeView from '@/views/MeView.vue'
+import { redirectIfAuth, requireAuth } from './guards'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -40,6 +41,12 @@ const router = createRouter({
       name: 'reset-password',
       component: ResetPasswordView,
       beforeEnter: redirectIfAuth,
+    },
+    {
+      path: '/me',
+      name: 'me',
+      component: MeView,
+      beforeEnter: requireAuth,
     },
   ],
 })
