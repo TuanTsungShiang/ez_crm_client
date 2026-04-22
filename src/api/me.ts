@@ -19,3 +19,14 @@ export async function getMe() {
   const { data } = await apiClient.get<ApiResponse<MeDetail>>('/me')
   return data
 }
+
+export interface UpdateMePayload {
+  name?: string
+  nickname?: string | null
+  phone?: string | null
+}
+
+export async function updateMe(payload: UpdateMePayload) {
+  const { data } = await apiClient.put<ApiResponse<MeDetail>>('/me', payload)
+  return data
+}
