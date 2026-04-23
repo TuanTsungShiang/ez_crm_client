@@ -118,9 +118,17 @@ function fmtDate(iso?: string | null) {
       <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-slate-900">已綁定登入方式</h2>
-          <span class="text-xs text-slate-400">
-            {{ member.sns?.length ?? 0 }} 個
-          </span>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400">
+              {{ member.sns?.length ?? 0 }} 個
+            </span>
+            <RouterLink
+              to="/me/sns"
+              class="text-xs font-medium text-blue-600 hover:underline"
+            >
+              管理 →
+            </RouterLink>
+          </div>
         </div>
 
         <ul v-if="member.sns && member.sns.length > 0" class="mt-4 space-y-2">
