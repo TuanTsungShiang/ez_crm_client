@@ -8,6 +8,7 @@ import ResetPasswordView from '@/views/ResetPasswordView.vue'
 import MeView from '@/views/MeView.vue'
 import MeEditView from '@/views/MeEditView.vue'
 import MeSnsView from '@/views/MeSnsView.vue'
+import MePasswordView from '@/views/MePasswordView.vue'
 import { redirectIfAuth, requireAuth } from './guards'
 
 const router = createRouter({
@@ -60,6 +61,12 @@ const router = createRouter({
       path: '/me/sns',
       name: 'me.sns',
       component: MeSnsView,
+      beforeEnter: requireAuth,
+    },
+    {
+      path: '/me/password',
+      name: 'me.password',
+      component: MePasswordView,
       beforeEnter: requireAuth,
     },
   ],
