@@ -1,5 +1,6 @@
 import { apiClient } from './client'
 import type { ApiResponse, Member } from './types'
+import type { OAuthProvider } from './auth'
 
 export interface MeDetail extends Member {
   group?: { name: string } | null
@@ -28,5 +29,12 @@ export interface UpdateMePayload {
 
 export async function updateMe(payload: UpdateMePayload) {
   const { data } = await apiClient.put<ApiResponse<MeDetail>>('/me', payload)
+  return data
+}
+
+export async function unbindSns(provider: OAuthProvider) {
+  const { data } = await apiClient.delete<ApiResponse<{ provider: string }>>(
+    `/me/sns/${provider}`,
+  )
   return data
 }
