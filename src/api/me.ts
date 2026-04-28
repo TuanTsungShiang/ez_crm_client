@@ -14,6 +14,7 @@ export interface MeDetail extends Member {
   } | null
   sns?: Array<{ provider: string }>
   tags?: Array<{ name: string; color?: string | null }>
+  has_local_password?: boolean
 }
 
 export async function getMe() {
@@ -47,6 +48,17 @@ export interface UpdatePasswordPayload {
 
 export async function updatePassword(payload: UpdatePasswordPayload) {
   const { data } = await apiClient.put<ApiResponse<null>>('/me/password', payload)
+  return data
+}
+
+export interface SetPasswordPayload {
+  password: string
+  password_confirmation: string
+}
+
+/** OAuth-only members setting their first real password. */
+export async function setPassword(payload: SetPasswordPayload) {
+  const { data } = await apiClient.post<ApiResponse<null>>('/me/password/set', payload)
   return data
 }
 
