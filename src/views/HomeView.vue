@@ -110,14 +110,12 @@ onMounted(async () => {
         >
           ✏️ 編輯資料
         </RouterLink>
-        <button
-          type="button"
-          disabled
-          class="cursor-not-allowed rounded-md border border-slate-200 px-3 py-3 text-center text-sm font-medium text-slate-400"
-          title="下次上線"
+        <RouterLink
+          to="/me/password"
+          class="rounded-md border border-slate-200 px-3 py-3 text-center text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-700"
         >
           🔑 更改密碼
-        </button>
+        </RouterLink>
         <RouterLink
           to="/me/sns"
           class="rounded-md border border-slate-200 px-3 py-3 text-center text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-700"

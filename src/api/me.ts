@@ -38,3 +38,19 @@ export async function unbindSns(provider: OAuthProvider) {
   )
   return data
 }
+
+export interface UpdatePasswordPayload {
+  current_password: string
+  password: string
+  password_confirmation: string
+}
+
+export async function updatePassword(payload: UpdatePasswordPayload) {
+  const { data } = await apiClient.put<ApiResponse<null>>('/me/password', payload)
+  return data
+}
+
+export async function destroyMe() {
+  const { data } = await apiClient.delete<ApiResponse<null>>('/me')
+  return data
+}

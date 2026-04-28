@@ -1,12 +1,56 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { AxiosError } from 'axios'
-import { getMe, type MeDetail } from '@/api/me'
+import { destroyMe, getMe, type MeDetail } from '@/api/me'
+import { useAuthStore } from '@/stores/auth'
 import type { ApiError } from '@/api/types'
+
+const router = useRouter()
+const auth = useAuthStore()
 
 const member = ref<MeDetail | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
+
+// 註銷帳號 modal
+const showDestroyModal = ref(false)
+const destroyEmailInput = ref('')
+const destroying = ref(false)
+const destroyError = ref<string | null>(null)
+
+const canConfirmDestroy = computed(
+  () => member.value && destroyEmailInput.value === member.value.email && !destroying.value,
+)
+
+function openDestroyModal() {
+  destroyEmailInput.value = ''
+  destroyError.value = null
+  showDestroyModal.value = true
+}
+
+function closeDestroyModal() {
+  if (destroying.value) return
+  showDestroyModal.value = false
+}
+
+async function confirmDestroy() {
+  if (!canConfirmDestroy.value) return
+  destroying.value = true
+  destroyError.value = null
+  try {
+    const res = await destroyMe()
+    if (res.success) {
+      auth.clear()
+      router.push({ name: 'login' })
+    }
+  } catch (e) {
+    const err = e as AxiosError<ApiError>
+    destroyError.value = err.response?.data.message ?? '註銷失敗,請稍後再試'
+  } finally {
+    destroying.value = false
+  }
+}
 
 const providerMeta: Record<
   string,
@@ -172,9 +216,75 @@ function fmtDate(iso?: string | null) {
         </dl>
       </div>
 
-      <p class="text-xs text-slate-400">
-        編輯 / 更改密碼功能開發中(下次上線)。
-      </p>
+      <!-- 危險區 -->
+      <div class="rounded-lg border border-red-200 bg-red-50/50 p-6">
+        <h2 class="text-lg font-semibold text-red-900">危險操作</h2>
+        <p class="mt-1 text-sm text-red-800">
+          註銷帳號後無法登入,資料會進入刪除狀態(email / 手機會保留一段時間以防搶註)。
+        </p>
+        <button
+          type="button"
+          class="mt-4 rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+          @click="openDestroyModal"
+        >
+          註銷帳號…
+        </button>
+      </div>
+    </div>
+
+    <!-- 註銷帳號 modal -->
+    <div
+      v-if="showDestroyModal && member"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
+      @click.self="closeDestroyModal"
+    >
+      <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+        <h3 class="text-lg font-semibold text-slate-900">確認註銷帳號</h3>
+        <p class="mt-2 text-sm text-slate-600">
+          此動作會:
+        </p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>軟刪除你的會員資料</li>
+          <li>登出所有裝置(撤銷所有 token)</li>
+          <li>保留 email / 手機不被立即搶註(需聯繫客服完全釋放)</li>
+        </ul>
+
+        <div class="mt-4 space-y-1">
+          <label class="block text-sm font-medium text-slate-700">
+            輸入你的 email 以確認:
+            <span class="font-mono text-xs text-slate-500">{{ member.email }}</span>
+          </label>
+          <input
+            v-model="destroyEmailInput"
+            type="email"
+            autocomplete="off"
+            class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+        </div>
+
+        <p v-if="destroyError" class="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
+          {{ destroyError }}
+        </p>
+
+        <div class="mt-6 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            :disabled="destroying"
+            class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            @click="closeDestroyModal"
+          >
+            取消
+          </button>
+          <button
+            type="button"
+            :disabled="!canConfirmDestroy"
+            class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+            @click="confirmDestroy"
+          >
+            {{ destroying ? '處理中…' : '確認註銷' }}
+          </button>
+        </div>
+      </div>
     </div>
   </section>
 </template>
