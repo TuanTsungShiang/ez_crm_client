@@ -1,0 +1,11 @@
+dist
+node_modules
+.vite
+*.lock
+package-lock.json
+public
+
+# Historical docs — formatting changes here lose meaning
+work_log/
+scheme/
+README.md

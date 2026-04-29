@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import type { Member } from '@/api/types'
 
