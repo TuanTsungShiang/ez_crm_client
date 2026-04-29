@@ -34,9 +34,7 @@ export async function updateMe(payload: UpdateMePayload) {
 }
 
 export async function unbindSns(provider: OAuthProvider) {
-  const { data } = await apiClient.delete<ApiResponse<{ provider: string }>>(
-    `/me/sns/${provider}`,
-  )
+  const { data } = await apiClient.delete<ApiResponse<{ provider: string }>>(`/me/sns/${provider}`)
   return data
 }
 

@@ -1,43 +1,36 @@
 <script setup lang="ts">
-import type { RegisterSchemaField } from '@/api/types'
+  import type { RegisterSchemaField } from '@/api/types'
 
-const props = defineProps<{
-  fields: RegisterSchemaField[]
-  modelValue: Record<string, unknown>
-  errors?: Record<string, string[]>
-  submitting?: boolean
-}>()
+  const props = defineProps<{
+    fields: RegisterSchemaField[]
+    modelValue: Record<string, unknown>
+    errors?: Record<string, string[]>
+    submitting?: boolean
+  }>()
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: Record<string, unknown>): void
-  (e: 'submit'): void
-}>()
+  const emit = defineEmits<{
+    (e: 'update:modelValue', value: Record<string, unknown>): void
+    (e: 'submit'): void
+  }>()
 
-function updateField(name: string, value: unknown) {
-  emit('update:modelValue', { ...props.modelValue, [name]: value })
-}
+  function updateField(name: string, value: unknown) {
+    emit('update:modelValue', { ...props.modelValue, [name]: value })
+  }
 
-function handleSubmit() {
-  emit('submit')
-}
+  function handleSubmit() {
+    emit('submit')
+  }
 
-function fieldError(name: string): string | null {
-  return props.errors?.[name]?.[0] ?? null
-}
+  function fieldError(name: string): string | null {
+    return props.errors?.[name]?.[0] ?? null
+  }
 </script>
 
 <template>
   <form class="space-y-4" @submit.prevent="handleSubmit">
-    <div
-      v-for="field in fields"
-      :key="field.name"
-      class="space-y-1"
-    >
+    <div v-for="field in fields" :key="field.name" class="space-y-1">
       <!-- checkbox 另外渲染 -->
-      <label
-        v-if="field.type === 'checkbox'"
-        class="flex items-center gap-2 text-sm"
-      >
+      <label v-if="field.type === 'checkbox'" class="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
           class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"

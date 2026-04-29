@@ -1,123 +1,118 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { AxiosError } from 'axios'
-import { getMe, updateMe, type UpdateMePayload } from '@/api/me'
-import { useAuthStore } from '@/stores/auth'
-import type { ApiError } from '@/api/types'
+  import { computed, onMounted, ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import type { AxiosError } from 'axios'
+  import { getMe, updateMe, type UpdateMePayload } from '@/api/me'
+  import { useAuthStore } from '@/stores/auth'
+  import type { ApiError } from '@/api/types'
 
-const router = useRouter()
-const auth = useAuthStore()
+  const router = useRouter()
+  const auth = useAuthStore()
 
-const form = ref<UpdateMePayload>({
-  name: '',
-  nickname: '',
-  phone: '',
-})
+  const form = ref<UpdateMePayload>({
+    name: '',
+    nickname: '',
+    phone: '',
+  })
 
-const originalSnapshot = ref<UpdateMePayload | null>(null)
-const loading = ref(true)
-const submitting = ref(false)
-const errors = ref<Record<string, string[]>>({})
-const topError = ref<string | null>(null)
-const success = ref(false)
+  const originalSnapshot = ref<UpdateMePayload | null>(null)
+  const loading = ref(true)
+  const submitting = ref(false)
+  const errors = ref<Record<string, string[]>>({})
+  const topError = ref<string | null>(null)
+  const success = ref(false)
 
-const isDirty = computed(() => {
-  if (!originalSnapshot.value) return false
-  return (
-    form.value.name !== originalSnapshot.value.name
-    || (form.value.nickname ?? '') !== (originalSnapshot.value.nickname ?? '')
-    || (form.value.phone ?? '') !== (originalSnapshot.value.phone ?? '')
-  )
-})
+  const isDirty = computed(() => {
+    if (!originalSnapshot.value) return false
+    return (
+      form.value.name !== originalSnapshot.value.name ||
+      (form.value.nickname ?? '') !== (originalSnapshot.value.nickname ?? '') ||
+      (form.value.phone ?? '') !== (originalSnapshot.value.phone ?? '')
+    )
+  })
 
-onMounted(async () => {
-  try {
-    const res = await getMe()
-    if (res.success) {
-      form.value = {
-        name: res.data.name,
-        nickname: res.data.nickname ?? '',
-        phone: res.data.phone ?? '',
+  onMounted(async () => {
+    try {
+      const res = await getMe()
+      if (res.success) {
+        form.value = {
+          name: res.data.name,
+          nickname: res.data.nickname ?? '',
+          phone: res.data.phone ?? '',
+        }
+        originalSnapshot.value = { ...form.value }
+      } else {
+        topError.value = res.message
       }
-      originalSnapshot.value = { ...form.value }
-    } else {
-      topError.value = res.message
+    } catch (e) {
+      topError.value = (e as Error).message
+    } finally {
+      loading.value = false
     }
-  } catch (e) {
-    topError.value = (e as Error).message
-  } finally {
-    loading.value = false
-  }
-})
+  })
 
-function fieldError(name: string): string | null {
-  return errors.value[name]?.[0] ?? null
-}
-
-async function handleSubmit() {
-  submitting.value = true
-  errors.value = {}
-  topError.value = null
-  success.value = false
-
-  // 只送有變動的欄位(backend rules 是 sometimes)
-  const payload: UpdateMePayload = {}
-  if (!originalSnapshot.value) return
-  if (form.value.name !== originalSnapshot.value.name) {
-    payload.name = form.value.name
-  }
-  if ((form.value.nickname ?? '') !== (originalSnapshot.value.nickname ?? '')) {
-    payload.nickname = form.value.nickname === '' ? null : form.value.nickname
-  }
-  if ((form.value.phone ?? '') !== (originalSnapshot.value.phone ?? '')) {
-    payload.phone = form.value.phone === '' ? null : form.value.phone
+  function fieldError(name: string): string | null {
+    return errors.value[name]?.[0] ?? null
   }
 
-  if (Object.keys(payload).length === 0) {
-    submitting.value = false
-    return
-  }
+  async function handleSubmit() {
+    submitting.value = true
+    errors.value = {}
+    topError.value = null
+    success.value = false
 
-  try {
-    const res = await updateMe(payload)
-    if (res.success) {
-      // 把更新過的 member 存回 auth store(Navbar / Home 會即時反映)
-      auth.setMember({
-        uuid: res.data.uuid,
-        name: res.data.name,
-        email: res.data.email,
-      })
-      originalSnapshot.value = { ...form.value }
-      success.value = true
-      setTimeout(() => {
-        router.push({ name: 'me' })
-      }, 800)
+    // 只送有變動的欄位(backend rules 是 sometimes)
+    const payload: UpdateMePayload = {}
+    if (!originalSnapshot.value) return
+    if (form.value.name !== originalSnapshot.value.name) {
+      payload.name = form.value.name
     }
-  } catch (e) {
-    const err = e as AxiosError<ApiError>
-    if (err.response?.status === 422 && err.response.data.errors) {
-      errors.value = err.response.data.errors
-      topError.value = err.response.data.message
-    } else {
-      topError.value = err.response?.data.message ?? '更新失敗,請稍後再試'
+    if ((form.value.nickname ?? '') !== (originalSnapshot.value.nickname ?? '')) {
+      payload.nickname = form.value.nickname === '' ? null : form.value.nickname
     }
-  } finally {
-    submitting.value = false
+    if ((form.value.phone ?? '') !== (originalSnapshot.value.phone ?? '')) {
+      payload.phone = form.value.phone === '' ? null : form.value.phone
+    }
+
+    if (Object.keys(payload).length === 0) {
+      submitting.value = false
+      return
+    }
+
+    try {
+      const res = await updateMe(payload)
+      if (res.success) {
+        // 把更新過的 member 存回 auth store(Navbar / Home 會即時反映)
+        auth.setMember({
+          uuid: res.data.uuid,
+          name: res.data.name,
+          email: res.data.email,
+        })
+        originalSnapshot.value = { ...form.value }
+        success.value = true
+        setTimeout(() => {
+          router.push({ name: 'me' })
+        }, 800)
+      }
+    } catch (e) {
+      const err = e as AxiosError<ApiError>
+      if (err.response?.status === 422 && err.response.data.errors) {
+        errors.value = err.response.data.errors
+        topError.value = err.response.data.message
+      } else {
+        topError.value = err.response?.data.message ?? '更新失敗,請稍後再試'
+      }
+    } finally {
+      submitting.value = false
+    }
   }
-}
 </script>
 
 <template>
   <section class="mx-auto max-w-xl">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold text-slate-900">編輯資料</h1>
-      <RouterLink
-        to="/me"
-        class="text-sm text-slate-500 hover:text-slate-700"
-      >
-        ← 返回
-      </RouterLink>
+      <RouterLink to="/me" class="text-sm text-slate-500 hover:text-slate-700"> ← 返回 </RouterLink>
     </div>
 
     <p v-if="loading" class="mt-8 text-sm text-slate-500">載入中…</p>

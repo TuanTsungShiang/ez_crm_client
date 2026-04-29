@@ -1,66 +1,66 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { AxiosError } from 'axios'
-import { login } from '@/api/auth'
-import { useAuthStore } from '@/stores/auth'
-import { ApiCode, type ApiError } from '@/api/types'
-import OAuthButtons from '@/components/OAuthButtons.vue'
+  import { ref } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import type { AxiosError } from 'axios'
+  import { login } from '@/api/auth'
+  import { useAuthStore } from '@/stores/auth'
+  import { ApiCode, type ApiError } from '@/api/types'
+  import OAuthButtons from '@/components/OAuthButtons.vue'
 
-const route = useRoute()
-const router = useRouter()
-const auth = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
+  const auth = useAuthStore()
 
-const email = ref('')
-const password = ref('')
-const submitting = ref(false)
-const error = ref<string | null>(null)
-const needVerifyEmail = ref<string | null>(null)
-const sessionExpired = route.query.expired === '1'
+  const email = ref('')
+  const password = ref('')
+  const submitting = ref(false)
+  const error = ref<string | null>(null)
+  const needVerifyEmail = ref<string | null>(null)
+  const sessionExpired = route.query.expired === '1'
 
-async function handleSubmit() {
-  submitting.value = true
-  error.value = null
-  needVerifyEmail.value = null
+  async function handleSubmit() {
+    submitting.value = true
+    error.value = null
+    needVerifyEmail.value = null
 
-  try {
-    const res = await login({ email: email.value, password: password.value })
-    if (res.success) {
-      auth.setToken(res.data.token)
-      auth.setMember(res.data.member)
-      const redirect = (route.query.redirect as string) || '/'
-      router.push(redirect)
+    try {
+      const res = await login({ email: email.value, password: password.value })
+      if (res.success) {
+        auth.setToken(res.data.token)
+        auth.setMember(res.data.member)
+        const redirect = (route.query.redirect as string) || '/'
+        router.push(redirect)
+      }
+    } catch (e) {
+      const err = e as AxiosError<ApiError>
+      const code = err.response?.data.code
+
+      switch (code) {
+        case ApiCode.INVALID_CREDENTIALS:
+          error.value = '帳號或密碼錯誤'
+          break
+        case ApiCode.ACCOUNT_SUSPENDED:
+          error.value = '此帳號已停用,請聯繫客服'
+          break
+        case ApiCode.EMAIL_NOT_VERIFIED:
+          // 後端 errors.email 會帶當前 email,導引到 verify 頁面
+          error.value = 'Email 尚未驗證'
+          needVerifyEmail.value = err.response?.data.errors?.email?.[0] ?? email.value
+          break
+        default:
+          error.value = err.response?.data.message ?? '登入失敗,請稍後再試'
+      }
+    } finally {
+      submitting.value = false
     }
-  } catch (e) {
-    const err = e as AxiosError<ApiError>
-    const code = err.response?.data.code
+  }
 
-    switch (code) {
-      case ApiCode.INVALID_CREDENTIALS:
-        error.value = '帳號或密碼錯誤'
-        break
-      case ApiCode.ACCOUNT_SUSPENDED:
-        error.value = '此帳號已停用,請聯繫客服'
-        break
-      case ApiCode.EMAIL_NOT_VERIFIED:
-        // 後端 errors.email 會帶當前 email,導引到 verify 頁面
-        error.value = 'Email 尚未驗證'
-        needVerifyEmail.value = err.response?.data.errors?.email?.[0] ?? email.value
-        break
-      default:
-        error.value = err.response?.data.message ?? '登入失敗,請稍後再試'
+  function goVerify() {
+    if (needVerifyEmail.value) {
+      sessionStorage.setItem('pending_verify_email', needVerifyEmail.value)
+      router.push({ name: 'verify' })
     }
-  } finally {
-    submitting.value = false
   }
-}
-
-function goVerify() {
-  if (needVerifyEmail.value) {
-    sessionStorage.setItem('pending_verify_email', needVerifyEmail.value)
-    router.push({ name: 'verify' })
-  }
-}
 </script>
 
 <template>

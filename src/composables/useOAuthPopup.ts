@@ -114,10 +114,7 @@ export function useOAuthPopup() {
    *   對應到的是別人的 ez_crm 帳號,不能偷換成那個人)。
    * - 成功時更新 token(currentAccessToken 換成新發的),但保持同一個 member。
    */
-  async function bind(
-    provider: OAuthProvider,
-    expectedMemberUuid: string,
-  ): Promise<OAuthResult> {
+  async function bind(provider: OAuthProvider, expectedMemberUuid: string): Promise<OAuthResult> {
     const auth = useAuthStore()
 
     const res = await getOAuthRedirectUrl(provider)
@@ -128,9 +125,7 @@ export function useOAuthPopup() {
     const data = await openOAuthPopup(provider, res.data.url)
 
     if (data.member.uuid !== expectedMemberUuid) {
-      throw new Error(
-        `這個 ${provider} 帳號對應到另一個 ez_crm 會員,無法綁定到目前登入的帳號`,
-      )
+      throw new Error(`這個 ${provider} 帳號對應到另一個 ez_crm 會員,無法綁定到目前登入的帳號`)
     }
 
     auth.setToken(data.token)

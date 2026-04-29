@@ -1,100 +1,97 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { AxiosError } from 'axios'
-import { destroyMe, getMe, type MeDetail } from '@/api/me'
-import { useAuthStore } from '@/stores/auth'
-import type { ApiError } from '@/api/types'
+  import { computed, onMounted, ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import type { AxiosError } from 'axios'
+  import { destroyMe, getMe, type MeDetail } from '@/api/me'
+  import { useAuthStore } from '@/stores/auth'
+  import type { ApiError } from '@/api/types'
 
-const router = useRouter()
-const auth = useAuthStore()
+  const router = useRouter()
+  const auth = useAuthStore()
 
-const member = ref<MeDetail | null>(null)
-const loading = ref(true)
-const error = ref<string | null>(null)
+  const member = ref<MeDetail | null>(null)
+  const loading = ref(true)
+  const error = ref<string | null>(null)
 
-// 註銷帳號 modal
-const showDestroyModal = ref(false)
-const destroyEmailInput = ref('')
-const destroying = ref(false)
-const destroyError = ref<string | null>(null)
+  // 註銷帳號 modal
+  const showDestroyModal = ref(false)
+  const destroyEmailInput = ref('')
+  const destroying = ref(false)
+  const destroyError = ref<string | null>(null)
 
-const canConfirmDestroy = computed(
-  () => member.value && destroyEmailInput.value === member.value.email && !destroying.value,
-)
+  const canConfirmDestroy = computed(
+    () => member.value && destroyEmailInput.value === member.value.email && !destroying.value,
+  )
 
-function openDestroyModal() {
-  destroyEmailInput.value = ''
-  destroyError.value = null
-  showDestroyModal.value = true
-}
-
-function closeDestroyModal() {
-  if (destroying.value) return
-  showDestroyModal.value = false
-}
-
-async function confirmDestroy() {
-  if (!canConfirmDestroy.value) return
-  destroying.value = true
-  destroyError.value = null
-  try {
-    const res = await destroyMe()
-    if (res.success) {
-      auth.clear()
-      router.push({ name: 'login' })
-    }
-  } catch (e) {
-    const err = e as AxiosError<ApiError>
-    destroyError.value = err.response?.data.message ?? '註銷失敗,請稍後再試'
-  } finally {
-    destroying.value = false
+  function openDestroyModal() {
+    destroyEmailInput.value = ''
+    destroyError.value = null
+    showDestroyModal.value = true
   }
-}
 
-const providerMeta: Record<
-  string,
-  { label: string; dot: string }
-> = {
-  google: { label: 'Google', dot: 'bg-red-500' },
-  github: { label: 'GitHub', dot: 'bg-slate-800' },
-  line: { label: 'LINE', dot: 'bg-[#06C755]' },
-  discord: { label: 'Discord', dot: 'bg-[#5865F2]' },
-}
-
-onMounted(async () => {
-  try {
-    const res = await getMe()
-    if (res.success) {
-      member.value = res.data
-    } else {
-      error.value = res.message
-    }
-  } catch (e) {
-    const err = e as AxiosError<ApiError>
-    error.value = err.response?.data.message ?? '讀取失敗'
-  } finally {
-    loading.value = false
+  function closeDestroyModal() {
+    if (destroying.value) return
+    showDestroyModal.value = false
   }
-})
 
-function statusLabel(status?: number) {
-  if (status === 1) return { text: '正常', color: 'text-emerald-600 bg-emerald-50' }
-  if (status === 0) return { text: '停用', color: 'text-red-600 bg-red-50' }
-  if (status === 2) return { text: '待驗證', color: 'text-amber-600 bg-amber-50' }
-  return { text: '未知', color: 'text-slate-500 bg-slate-50' }
-}
+  async function confirmDestroy() {
+    if (!canConfirmDestroy.value) return
+    destroying.value = true
+    destroyError.value = null
+    try {
+      const res = await destroyMe()
+      if (res.success) {
+        auth.clear()
+        router.push({ name: 'login' })
+      }
+    } catch (e) {
+      const err = e as AxiosError<ApiError>
+      destroyError.value = err.response?.data.message ?? '註銷失敗,請稍後再試'
+    } finally {
+      destroying.value = false
+    }
+  }
 
-function fmtDate(iso?: string | null) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  const providerMeta: Record<string, { label: string; dot: string }> = {
+    google: { label: 'Google', dot: 'bg-red-500' },
+    github: { label: 'GitHub', dot: 'bg-slate-800' },
+    line: { label: 'LINE', dot: 'bg-[#06C755]' },
+    discord: { label: 'Discord', dot: 'bg-[#5865F2]' },
+  }
+
+  onMounted(async () => {
+    try {
+      const res = await getMe()
+      if (res.success) {
+        member.value = res.data
+      } else {
+        error.value = res.message
+      }
+    } catch (e) {
+      const err = e as AxiosError<ApiError>
+      error.value = err.response?.data.message ?? '讀取失敗'
+    } finally {
+      loading.value = false
+    }
   })
-}
+
+  function statusLabel(status?: number) {
+    if (status === 1) return { text: '正常', color: 'text-emerald-600 bg-emerald-50' }
+    if (status === 0) return { text: '停用', color: 'text-red-600 bg-red-50' }
+    if (status === 2) return { text: '待驗證', color: 'text-amber-600 bg-amber-50' }
+    return { text: '未知', color: 'text-slate-500 bg-slate-50' }
+  }
+
+  function fmtDate(iso?: string | null) {
+    if (!iso) return '—'
+    return new Date(iso).toLocaleString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
 </script>
 
 <template>
@@ -163,13 +160,8 @@ function fmtDate(iso?: string | null) {
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-slate-900">已綁定登入方式</h2>
           <div class="flex items-center gap-3">
-            <span class="text-xs text-slate-400">
-              {{ member.sns?.length ?? 0 }} 個
-            </span>
-            <RouterLink
-              to="/me/sns"
-              class="text-xs font-medium text-blue-600 hover:underline"
-            >
+            <span class="text-xs text-slate-400"> {{ member.sns?.length ?? 0 }} 個 </span>
+            <RouterLink to="/me/sns" class="text-xs font-medium text-blue-600 hover:underline">
               管理 →
             </RouterLink>
           </div>
@@ -240,9 +232,7 @@ function fmtDate(iso?: string | null) {
     >
       <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
         <h3 class="text-lg font-semibold text-slate-900">確認註銷帳號</h3>
-        <p class="mt-2 text-sm text-slate-600">
-          此動作會:
-        </p>
+        <p class="mt-2 text-sm text-slate-600">此動作會:</p>
         <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
           <li>軟刪除你的會員資料</li>
           <li>登出所有裝置(撤銷所有 token)</li>

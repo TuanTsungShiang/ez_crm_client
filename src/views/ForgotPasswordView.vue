@@ -1,42 +1,40 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { AxiosError } from 'axios'
-import { forgotPassword } from '@/api/auth'
-import type { ApiError } from '@/api/types'
+  import { ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import type { AxiosError } from 'axios'
+  import { forgotPassword } from '@/api/auth'
+  import type { ApiError } from '@/api/types'
 
-const router = useRouter()
+  const router = useRouter()
 
-const email = ref('')
-const submitting = ref(false)
-const error = ref<string | null>(null)
+  const email = ref('')
+  const submitting = ref(false)
+  const error = ref<string | null>(null)
 
-async function handleSubmit() {
-  submitting.value = true
-  error.value = null
+  async function handleSubmit() {
+    submitting.value = true
+    error.value = null
 
-  try {
-    const res = await forgotPassword(email.value)
-    if (res.success) {
-      // email 帶到下一頁(sessionStorage,不進 URL)
-      sessionStorage.setItem('pending_reset_email', email.value)
-      router.push({ name: 'reset-password' })
+    try {
+      const res = await forgotPassword(email.value)
+      if (res.success) {
+        // email 帶到下一頁(sessionStorage,不進 URL)
+        sessionStorage.setItem('pending_reset_email', email.value)
+        router.push({ name: 'reset-password' })
+      }
+    } catch (e) {
+      const err = e as AxiosError<ApiError>
+      error.value = err.response?.data.message ?? '發送失敗,請稍後再試'
+    } finally {
+      submitting.value = false
     }
-  } catch (e) {
-    const err = e as AxiosError<ApiError>
-    error.value = err.response?.data.message ?? '發送失敗,請稍後再試'
-  } finally {
-    submitting.value = false
   }
-}
 </script>
 
 <template>
   <section class="mx-auto max-w-md">
     <h1 class="text-2xl font-bold text-slate-900">忘記密碼</h1>
-    <p class="mt-2 text-sm text-slate-500">
-      輸入註冊時的 Email,我們會寄送 6 位數驗證碼給你。
-    </p>
+    <p class="mt-2 text-sm text-slate-500">輸入註冊時的 Email,我們會寄送 6 位數驗證碼給你。</p>
 
     <form
       class="mt-6 space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"

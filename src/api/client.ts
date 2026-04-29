@@ -1,4 +1,5 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import type { AxiosError } from 'axios'
+import axios, { type InternalAxiosRequestConfig } from 'axios'
 import type { ApiError } from './types'
 
 export const apiClient = axios.create({

@@ -1,10 +1,5 @@
 import { apiClient } from './client'
-import type {
-  ApiResponse,
-  LoginResult,
-  RegisterResult,
-  RegisterSchema,
-} from './types'
+import type { ApiResponse, LoginResult, RegisterResult, RegisterSchema } from './types'
 
 export interface RegisterPayload {
   name: string
@@ -23,33 +18,25 @@ export interface LoginPayload {
 }
 
 export async function getRegisterSchema() {
-  const { data } = await apiClient.get<ApiResponse<RegisterSchema>>(
-    '/auth/register/schema',
-  )
+  const { data } = await apiClient.get<ApiResponse<RegisterSchema>>('/auth/register/schema')
   return data
 }
 
 export async function register(payload: RegisterPayload) {
-  const { data } = await apiClient.post<ApiResponse<RegisterResult>>(
-    '/auth/register',
-    payload,
-  )
+  const { data } = await apiClient.post<ApiResponse<RegisterResult>>('/auth/register', payload)
   return data
 }
 
 export async function login(payload: LoginPayload) {
-  const { data } = await apiClient.post<ApiResponse<LoginResult>>(
-    '/auth/login',
-    payload,
-  )
+  const { data } = await apiClient.post<ApiResponse<LoginResult>>('/auth/login', payload)
   return data
 }
 
 export async function verifyEmail(email: string, code: string) {
-  const { data } = await apiClient.post<ApiResponse<LoginResult>>(
-    '/auth/verify/email',
-    { email, code },
-  )
+  const { data } = await apiClient.post<ApiResponse<LoginResult>>('/auth/verify/email', {
+    email,
+    code,
+  })
   return data
 }
 
@@ -77,10 +64,7 @@ export interface ResetPasswordPayload {
 }
 
 export async function resetPassword(payload: ResetPasswordPayload) {
-  const { data } = await apiClient.post<ApiResponse<null>>(
-    '/auth/password/reset',
-    payload,
-  )
+  const { data } = await apiClient.post<ApiResponse<null>>('/auth/password/reset', payload)
   return data
 }
 
