@@ -4,6 +4,11 @@
   import type { AxiosError } from 'axios'
   import { forgotPassword } from '@/api/auth'
   import type { ApiError } from '@/api/types'
+  import Button from '@/components/ui/Button.vue'
+  import Card from '@/components/ui/Card.vue'
+  import FormInput from '@/components/ui/FormInput.vue'
+  import FormLabel from '@/components/ui/FormLabel.vue'
+  import TextLink from '@/components/ui/TextLink.vue'
 
   const router = useRouter()
 
@@ -36,38 +41,24 @@
     <h1 class="text-2xl font-bold text-slate-900">忘記密碼</h1>
     <p class="mt-2 text-sm text-slate-500">輸入註冊時的 Email,我們會寄送 6 位數驗證碼給你。</p>
 
-    <form
-      class="mt-6 space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
-      @submit.prevent="handleSubmit"
-    >
-      <div class="space-y-1">
-        <label for="email" class="block text-sm font-medium text-slate-700">
-          Email <span class="text-red-500">*</span>
-        </label>
-        <input
-          id="email"
-          v-model="email"
-          type="email"
-          required
-          autocomplete="email"
-          class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
+    <Card class="mt-6">
+      <form class="space-y-4" @submit.prevent="handleSubmit">
+        <div class="space-y-1">
+          <FormLabel for="email" required>Email</FormLabel>
+          <FormInput id="email" v-model="email" type="email" required autocomplete="email" />
+        </div>
 
-      <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+        <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
 
-      <button
-        type="submit"
-        :disabled="submitting"
-        class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
-      >
-        {{ submitting ? '發送中…' : '寄送驗證碼' }}
-      </button>
+        <Button type="submit" :disabled="submitting" class="w-full">
+          {{ submitting ? '發送中…' : '寄送驗證碼' }}
+        </Button>
 
-      <p class="pt-2 text-center text-xs text-slate-500">
-        想起密碼了?
-        <RouterLink to="/login" class="text-blue-600 hover:underline">返回登入</RouterLink>
-      </p>
-    </form>
+        <p class="pt-2 text-center text-xs text-slate-500">
+          想起密碼了?
+          <TextLink to="/login" variant="primary">返回登入</TextLink>
+        </p>
+      </form>
+    </Card>
   </section>
 </template>

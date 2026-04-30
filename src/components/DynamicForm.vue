@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import type { RegisterSchemaField } from '@/api/types'
+  import Button from '@/components/ui/Button.vue'
+  import FormInput from '@/components/ui/FormInput.vue'
+  import FormLabel from '@/components/ui/FormLabel.vue'
 
   const props = defineProps<{
     fields: RegisterSchemaField[]
@@ -42,19 +45,17 @@
 
       <!-- 其他 input -->
       <template v-else>
-        <label :for="field.name" class="block text-sm font-medium text-slate-700">
+        <FormLabel :for="field.name" :required="field.required">
           {{ field.label }}
-          <span v-if="field.required" class="text-red-500">*</span>
-        </label>
-        <input
+        </FormLabel>
+        <FormInput
           :id="field.name"
           :type="field.type"
           :placeholder="field.placeholder"
           :required="field.required"
-          :value="modelValue[field.name] ?? ''"
-          class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          :class="{ 'border-red-400': fieldError(field.name) }"
-          @input="updateField(field.name, ($event.target as HTMLInputElement).value)"
+          :model-value="(modelValue[field.name] as string | number | null | undefined) ?? ''"
+          :error="!!fieldError(field.name)"
+          @update:model-value="updateField(field.name, $event)"
         />
         <p v-if="field.hint && !fieldError(field.name)" class="text-xs text-slate-500">
           {{ field.hint }}
@@ -66,12 +67,8 @@
       </p>
     </div>
 
-    <button
-      type="submit"
-      :disabled="submitting"
-      class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-slate-300 disabled:cursor-not-allowed"
-    >
+    <Button type="submit" :disabled="submitting" class="w-full">
       {{ submitting ? '處理中…' : '送出' }}
-    </button>
+    </Button>
   </form>
 </template>

@@ -6,6 +6,11 @@
   import { useAuthStore } from '@/stores/auth'
   import { ApiCode, type ApiError } from '@/api/types'
   import OAuthButtons from '@/components/OAuthButtons.vue'
+  import Button from '@/components/ui/Button.vue'
+  import Card from '@/components/ui/Card.vue'
+  import FormInput from '@/components/ui/FormInput.vue'
+  import FormLabel from '@/components/ui/FormLabel.vue'
+  import TextLink from '@/components/ui/TextLink.vue'
 
   const route = useRoute()
   const router = useRouter()
@@ -74,71 +79,49 @@
       登入已逾期,請重新登入。
     </div>
 
-    <form
-      class="mt-6 space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
-      @submit.prevent="handleSubmit"
-    >
-      <div class="space-y-1">
-        <label for="email" class="block text-sm font-medium text-slate-700">
-          Email <span class="text-red-500">*</span>
-        </label>
-        <input
-          id="email"
-          v-model="email"
-          type="email"
-          required
-          autocomplete="email"
-          class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
+    <Card class="mt-6">
+      <form class="space-y-4" @submit.prevent="handleSubmit">
+        <div class="space-y-1">
+          <FormLabel for="email" required>Email</FormLabel>
+          <FormInput id="email" v-model="email" type="email" required autocomplete="email" />
+        </div>
 
-      <div class="space-y-1">
-        <label for="password" class="block text-sm font-medium text-slate-700">
-          密碼 <span class="text-red-500">*</span>
-        </label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          required
-          autocomplete="current-password"
-          class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
+        <div class="space-y-1">
+          <FormLabel for="password" required>密碼</FormLabel>
+          <FormInput
+            id="password"
+            v-model="password"
+            type="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
 
-      <div v-if="error" class="space-y-2">
-        <p class="text-sm text-red-600">{{ error }}</p>
-        <button
-          v-if="needVerifyEmail"
-          type="button"
-          class="text-sm text-blue-600 underline hover:text-blue-700"
-          @click="goVerify"
-        >
-          前往驗證 {{ needVerifyEmail }} →
-        </button>
-      </div>
+        <div v-if="error" class="space-y-2">
+          <p class="text-sm text-red-600">{{ error }}</p>
+          <button
+            v-if="needVerifyEmail"
+            type="button"
+            class="text-sm text-blue-600 underline hover:text-blue-700"
+            @click="goVerify"
+          >
+            前往驗證 {{ needVerifyEmail }} →
+          </button>
+        </div>
 
-      <button
-        type="submit"
-        :disabled="submitting"
-        class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-slate-300 disabled:cursor-not-allowed"
-      >
-        {{ submitting ? '登入中…' : '登入' }}
-      </button>
+        <Button type="submit" :disabled="submitting" class="w-full">
+          {{ submitting ? '登入中…' : '登入' }}
+        </Button>
 
-      <div class="flex items-center justify-between pt-2 text-xs text-slate-500">
-        <RouterLink
-          to="/forgot-password"
-          class="text-slate-500 hover:text-slate-700 hover:underline"
-        >
-          忘記密碼?
-        </RouterLink>
-        <span>
-          還沒有帳號?
-          <RouterLink to="/register" class="text-blue-600 hover:underline">立即註冊</RouterLink>
-        </span>
-      </div>
-    </form>
+        <div class="flex items-center justify-between pt-2 text-xs text-slate-500">
+          <TextLink to="/forgot-password">忘記密碼?</TextLink>
+          <span>
+            還沒有帳號?
+            <TextLink to="/register" variant="primary">立即註冊</TextLink>
+          </span>
+        </div>
+      </form>
+    </Card>
 
     <div class="mt-6 border-t border-slate-200 pt-6">
       <OAuthButtons mode="login" />

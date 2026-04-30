@@ -5,6 +5,8 @@
   import { useOAuthPopup } from '@/composables/useOAuthPopup'
   import type { OAuthProvider } from '@/api/auth'
   import type { ApiError } from '@/api/types'
+  import Button from '@/components/ui/Button.vue'
+  import TextLink from '@/components/ui/TextLink.vue'
 
   const { bind } = useOAuthPopup()
 
@@ -107,7 +109,7 @@
   <section class="mx-auto max-w-2xl">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold text-slate-900">登入方式管理</h1>
-      <RouterLink to="/me" class="text-sm text-slate-500 hover:text-slate-700"> ← 返回 </RouterLink>
+      <TextLink to="/me">← 返回</TextLink>
     </div>
     <p class="mt-2 text-sm text-slate-500">你可以綁定多個第三方登入管道,或解除你不再使用的。</p>
 
@@ -156,25 +158,20 @@
 
             <template v-if="boundProviders.has(p.id)">
               <span class="text-xs font-medium text-emerald-600">已綁定</span>
-              <button
-                type="button"
+              <Button
+                variant="danger"
+                size="sm"
                 :disabled="busy !== null"
-                class="rounded-md border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                 @click="handleUnbind(p.id)"
               >
                 {{ busy === p.id ? '處理中…' : '解綁' }}
-              </button>
+              </Button>
             </template>
             <template v-else>
               <span class="text-xs text-slate-400">未綁定</span>
-              <button
-                type="button"
-                :disabled="busy !== null"
-                class="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                @click="handleBind(p.id)"
-              >
+              <Button size="sm" :disabled="busy !== null" @click="handleBind(p.id)">
                 {{ busy === p.id ? '授權中…' : '綁定' }}
-              </button>
+              </Button>
             </template>
           </li>
         </ul>

@@ -5,6 +5,11 @@
   import { getMe, setPassword, updatePassword } from '@/api/me'
   import { useAuthStore } from '@/stores/auth'
   import type { ApiError } from '@/api/types'
+  import Button from '@/components/ui/Button.vue'
+  import Card from '@/components/ui/Card.vue'
+  import FormInput from '@/components/ui/FormInput.vue'
+  import FormLabel from '@/components/ui/FormLabel.vue'
+  import TextLink from '@/components/ui/TextLink.vue'
 
   const router = useRouter()
   const auth = useAuthStore()
@@ -113,7 +118,7 @@
   <section class="mx-auto max-w-md">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold text-slate-900">{{ heading }}</h1>
-      <RouterLink to="/me" class="text-sm text-slate-500 hover:text-slate-700"> ← 返回 </RouterLink>
+      <TextLink to="/me">← 返回</TextLink>
     </div>
     <p class="mt-2 text-sm text-slate-500">{{ subheading }}</p>
 
@@ -127,93 +132,77 @@
         <p class="mt-1 text-xs text-emerald-700">即將導向登入頁,請用新密碼登入…</p>
       </div>
 
-      <form
-        v-else
-        class="mt-6 space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
-        @submit.prevent="handleSubmit"
-      >
-        <p v-if="topError" class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-          {{ topError }}
-        </p>
-
-        <div v-if="hasLocalPassword" class="space-y-1">
-          <label for="current_password" class="block text-sm font-medium text-slate-700">
-            目前密碼 <span class="text-red-500">*</span>
-          </label>
-          <input
-            id="current_password"
-            v-model="form.current_password"
-            type="password"
-            required
-            autocomplete="current-password"
-            class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            :class="{ 'border-red-400': fieldError('current_password') }"
-          />
-          <p v-if="fieldError('current_password')" class="text-xs text-red-500">
-            {{ fieldError('current_password') }}
+      <Card v-else class="mt-6">
+        <form class="space-y-4" @submit.prevent="handleSubmit">
+          <p v-if="topError" class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ topError }}
           </p>
-        </div>
 
-        <div class="space-y-1">
-          <label for="password" class="block text-sm font-medium text-slate-700">
-            {{ hasLocalPassword ? '新密碼' : '密碼' }} <span class="text-red-500">*</span>
-          </label>
-          <input
-            id="password"
-            v-model="form.password"
-            type="password"
-            required
-            minlength="8"
-            autocomplete="new-password"
-            class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            :class="{ 'border-red-400': fieldError('password') }"
-          />
-          <p v-if="fieldError('password')" class="text-xs text-red-500">
-            {{ fieldError('password') }}
-          </p>
-          <p class="text-xs text-slate-500">至少 8 字,需包含大寫字母與數字。</p>
-        </div>
+          <div v-if="hasLocalPassword" class="space-y-1">
+            <FormLabel for="current_password" required>目前密碼</FormLabel>
+            <FormInput
+              id="current_password"
+              v-model="form.current_password"
+              type="password"
+              required
+              autocomplete="current-password"
+              :error="!!fieldError('current_password')"
+            />
+            <p v-if="fieldError('current_password')" class="text-xs text-red-500">
+              {{ fieldError('current_password') }}
+            </p>
+          </div>
 
-        <div class="space-y-1">
-          <label for="password_confirmation" class="block text-sm font-medium text-slate-700">
-            {{ hasLocalPassword ? '確認新密碼' : '確認密碼' }} <span class="text-red-500">*</span>
-          </label>
-          <input
-            id="password_confirmation"
-            v-model="form.password_confirmation"
-            type="password"
-            required
-            autocomplete="new-password"
-            class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            :class="{ 'border-red-400': passwordMismatch }"
-          />
-          <p v-if="passwordMismatch" class="text-xs text-red-500">兩次輸入的密碼不一致</p>
-        </div>
+          <div class="space-y-1">
+            <FormLabel for="password" required>
+              {{ hasLocalPassword ? '新密碼' : '密碼' }}
+            </FormLabel>
+            <FormInput
+              id="password"
+              v-model="form.password"
+              type="password"
+              required
+              minlength="8"
+              autocomplete="new-password"
+              :error="!!fieldError('password')"
+            />
+            <p v-if="fieldError('password')" class="text-xs text-red-500">
+              {{ fieldError('password') }}
+            </p>
+            <p class="text-xs text-slate-500">至少 8 字,需包含大寫字母與數字。</p>
+          </div>
 
-        <div class="flex items-center gap-3 pt-4">
-          <button
-            type="submit"
-            :disabled="!canSubmit"
-            class="flex-1 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-slate-300 disabled:cursor-not-allowed"
-          >
-            {{
-              submitting
-                ? hasLocalPassword
-                  ? '更新中…'
-                  : '設定中…'
-                : hasLocalPassword
-                  ? '更新密碼'
-                  : '設定密碼'
-            }}
-          </button>
-          <RouterLink
-            to="/me"
-            class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            取消
-          </RouterLink>
-        </div>
-      </form>
+          <div class="space-y-1">
+            <FormLabel for="password_confirmation" required>
+              {{ hasLocalPassword ? '確認新密碼' : '確認密碼' }}
+            </FormLabel>
+            <FormInput
+              id="password_confirmation"
+              v-model="form.password_confirmation"
+              type="password"
+              required
+              autocomplete="new-password"
+              :error="passwordMismatch"
+            />
+            <p v-if="passwordMismatch" class="text-xs text-red-500">兩次輸入的密碼不一致</p>
+          </div>
+
+          <div class="flex items-center gap-3 pt-4">
+            <Button type="submit" :disabled="!canSubmit" class="flex-1">
+              {{
+                submitting
+                  ? hasLocalPassword
+                    ? '更新中…'
+                    : '設定中…'
+                  : hasLocalPassword
+                    ? '更新密碼'
+                    : '設定密碼'
+              }}
+            </Button>
+            <Button variant="secondary" :to="{ name: 'me' }">取消</Button>
+          </div>
+        </form>
+      </Card>
     </template>
   </section>
 </template>

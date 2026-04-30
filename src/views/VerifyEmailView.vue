@@ -5,6 +5,9 @@
   import { sendEmailOtp, verifyEmail } from '@/api/auth'
   import { useAuthStore } from '@/stores/auth'
   import { ApiCode, type ApiError } from '@/api/types'
+  import Button from '@/components/ui/Button.vue'
+  import Card from '@/components/ui/Card.vue'
+  import FormInput from '@/components/ui/FormInput.vue'
 
   const router = useRouter()
   const auth = useAuthStore()
@@ -80,7 +83,7 @@
   <section class="mx-auto max-w-md">
     <h1 class="text-2xl font-bold text-slate-900">驗證 Email</h1>
 
-    <div class="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+    <Card class="mt-6">
       <p v-if="email" class="text-sm text-slate-600">
         我們已寄驗證碼到
         <strong class="text-slate-900">{{ email }}</strong>
@@ -93,15 +96,15 @@
       </p>
 
       <form class="mt-4 space-y-4" @submit.prevent="handleSubmit">
-        <input
+        <FormInput
           v-model="code"
           type="text"
           inputmode="numeric"
           pattern="[0-9]{6}"
           maxlength="6"
           placeholder="123456"
-          class="block w-full rounded-md border border-slate-300 px-3 py-2 text-center text-2xl font-mono tracking-widest shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           :disabled="!email"
+          class="text-center text-2xl font-mono tracking-widest"
         />
 
         <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
@@ -109,23 +112,19 @@
           {{ resendMessage }}
         </p>
 
-        <button
-          type="submit"
-          :disabled="submitting || !email"
-          class="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
-        >
+        <Button type="submit" :disabled="submitting || !email" class="w-full">
           {{ submitting ? '驗證中…' : '驗證並登入' }}
-        </button>
+        </Button>
       </form>
 
-      <button
-        type="button"
-        class="mt-4 w-full text-sm text-slate-500 hover:text-slate-700 disabled:opacity-50"
+      <Button
+        variant="ghost"
         :disabled="resending || !email"
+        class="mt-4 w-full"
         @click="handleResend"
       >
         {{ resending ? '發送中…' : '沒收到信?重新發送' }}
-      </button>
-    </div>
+      </Button>
+    </Card>
   </section>
 </template>

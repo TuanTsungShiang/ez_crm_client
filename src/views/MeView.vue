@@ -2,9 +2,21 @@
   import { computed, onMounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import type { AxiosError } from 'axios'
+  import {
+    Dialog,
+    DialogPanel,
+    DialogTitle,
+    TransitionChild,
+    TransitionRoot,
+  } from '@headlessui/vue'
   import { destroyMe, getMe, type MeDetail } from '@/api/me'
   import { useAuthStore } from '@/stores/auth'
   import type { ApiError } from '@/api/types'
+  import Button from '@/components/ui/Button.vue'
+  import Card from '@/components/ui/Card.vue'
+  import FormInput from '@/components/ui/FormInput.vue'
+  import FormLabel from '@/components/ui/FormLabel.vue'
+  import TextLink from '@/components/ui/TextLink.vue'
 
   const router = useRouter()
   const auth = useAuthStore()
@@ -106,7 +118,7 @@
 
     <div v-else-if="member" class="mt-6 space-y-4">
       <!-- 基本資料卡片 -->
-      <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <Card>
         <div class="flex items-start justify-between">
           <div>
             <h2 class="text-lg font-semibold text-slate-900">基本資料</h2>
@@ -153,17 +165,15 @@
             <dd class="text-sm text-slate-900">{{ fmtDate(member.last_login_at) }}</dd>
           </div>
         </dl>
-      </div>
+      </Card>
 
       <!-- 綁定的第三方登入 -->
-      <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <Card>
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-slate-900">已綁定登入方式</h2>
           <div class="flex items-center gap-3">
             <span class="text-xs text-slate-400"> {{ member.sns?.length ?? 0 }} 個 </span>
-            <RouterLink to="/me/sns" class="text-xs font-medium text-blue-600 hover:underline">
-              管理 →
-            </RouterLink>
+            <TextLink to="/me/sns" variant="primary" class="text-xs font-medium"> 管理 → </TextLink>
           </div>
         </div>
 
@@ -187,10 +197,10 @@
         <p v-else class="mt-4 text-sm text-slate-500">
           目前沒有綁定任何第三方登入(你是用 Email 註冊的)
         </p>
-      </div>
+      </Card>
 
       <!-- Profile -->
-      <div v-if="member.profile" class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <Card v-if="member.profile">
         <h2 class="text-lg font-semibold text-slate-900">個人設定</h2>
         <dl class="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
           <div>
@@ -206,7 +216,7 @@
             <dd class="text-sm text-slate-900">{{ member.profile.bio }}</dd>
           </div>
         </dl>
-      </div>
+      </Card>
 
       <!-- 危險區 -->
       <div class="rounded-lg border border-red-200 bg-red-50/50 p-6">
@@ -214,67 +224,75 @@
         <p class="mt-1 text-sm text-red-800">
           註銷帳號後無法登入,資料會進入刪除狀態(email / 手機會保留一段時間以防搶註)。
         </p>
-        <button
-          type="button"
-          class="mt-4 rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
-          @click="openDestroyModal"
-        >
-          註銷帳號…
-        </button>
+        <Button variant="danger" class="mt-4" @click="openDestroyModal">註銷帳號…</Button>
       </div>
     </div>
 
     <!-- 註銷帳號 modal -->
-    <div
-      v-if="showDestroyModal && member"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
-      @click.self="closeDestroyModal"
-    >
-      <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h3 class="text-lg font-semibold text-slate-900">確認註銷帳號</h3>
-        <p class="mt-2 text-sm text-slate-600">此動作會:</p>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
-          <li>軟刪除你的會員資料</li>
-          <li>登出所有裝置(撤銷所有 token)</li>
-          <li>保留 email / 手機不被立即搶註(需聯繫客服完全釋放)</li>
-        </ul>
+    <TransitionRoot appear :show="showDestroyModal && !!member" as="template">
+      <Dialog as="div" class="relative z-50" @close="closeDestroyModal">
+        <TransitionChild
+          as="template"
+          enter="duration-200 ease-out"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="duration-150 ease-in"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-slate-900/60" />
+        </TransitionChild>
 
-        <div class="mt-4 space-y-1">
-          <label class="block text-sm font-medium text-slate-700">
-            輸入你的 email 以確認:
-            <span class="font-mono text-xs text-slate-500">{{ member.email }}</span>
-          </label>
-          <input
-            v-model="destroyEmailInput"
-            type="email"
-            autocomplete="off"
-            class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-          />
-        </div>
-
-        <p v-if="destroyError" class="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
-          {{ destroyError }}
-        </p>
-
-        <div class="mt-6 flex items-center justify-end gap-2">
-          <button
-            type="button"
-            :disabled="destroying"
-            class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            @click="closeDestroyModal"
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+          <TransitionChild
+            as="template"
+            enter="duration-200 ease-out"
+            enter-from="opacity-0 scale-95"
+            enter-to="opacity-100 scale-100"
+            leave="duration-150 ease-in"
+            leave-from="opacity-100 scale-100"
+            leave-to="opacity-0 scale-95"
           >
-            取消
-          </button>
-          <button
-            type="button"
-            :disabled="!canConfirmDestroy"
-            class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
-            @click="confirmDestroy"
-          >
-            {{ destroying ? '處理中…' : '確認註銷' }}
-          </button>
+            <DialogPanel class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+              <DialogTitle class="text-lg font-semibold text-slate-900">確認註銷帳號</DialogTitle>
+              <p class="mt-2 text-sm text-slate-600">此動作會:</p>
+              <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
+                <li>軟刪除你的會員資料</li>
+                <li>登出所有裝置(撤銷所有 token)</li>
+                <li>保留 email / 手機不被立即搶註(需聯繫客服完全釋放)</li>
+              </ul>
+
+              <div class="mt-4 space-y-1">
+                <FormLabel>
+                  輸入你的 email 以確認:
+                  <span class="font-mono text-xs text-slate-500">{{ member?.email }}</span>
+                </FormLabel>
+                <FormInput v-model="destroyEmailInput" type="email" autocomplete="off" error />
+              </div>
+
+              <p
+                v-if="destroyError"
+                class="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700"
+              >
+                {{ destroyError }}
+              </p>
+
+              <div class="mt-6 flex items-center justify-end gap-2">
+                <Button variant="secondary" :disabled="destroying" @click="closeDestroyModal">
+                  取消
+                </Button>
+                <Button
+                  variant="danger-solid"
+                  :disabled="!canConfirmDestroy"
+                  @click="confirmDestroy"
+                >
+                  {{ destroying ? '處理中…' : '確認註銷' }}
+                </Button>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
         </div>
-      </div>
-    </div>
+      </Dialog>
+    </TransitionRoot>
   </section>
 </template>

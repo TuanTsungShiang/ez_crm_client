@@ -2,6 +2,8 @@
   import { computed, onMounted, ref } from 'vue'
   import { useAuthStore } from '@/stores/auth'
   import { getMe, type MeDetail } from '@/api/me'
+  import Card from '@/components/ui/Card.vue'
+  import TextLink from '@/components/ui/TextLink.vue'
 
   const auth = useAuthStore()
 
@@ -22,6 +24,13 @@
 
   const providerCount = computed(() => me.value?.sns?.length ?? 0)
   const emailVerified = computed(() => !!me.value?.email_verified_at)
+
+  const quickActions: Array<{ to: string; label: string }> = [
+    { to: '/me', label: '👤 我的資料' },
+    { to: '/me/edit', label: '✏️ 編輯資料' },
+    { to: '/me/password', label: '🔑 更改密碼' },
+    { to: '/me/sns', label: '🔌 綁定管理' },
+  ]
 
   function fmtDate(iso?: string | null) {
     if (!iso) return '—'
@@ -52,9 +61,9 @@
     <h1 class="text-3xl font-bold text-slate-900">ez_crm 前台會員系統</h1>
     <p class="mt-6 text-slate-500">
       尚未登入,請到
-      <RouterLink to="/login" class="text-blue-600 hover:underline">Login</RouterLink>
+      <TextLink to="/login" variant="primary">Login</TextLink>
       或
-      <RouterLink to="/register" class="text-blue-600 hover:underline">Register</RouterLink>。
+      <TextLink to="/register" variant="primary">Register</TextLink>。
     </p>
   </section>
 
@@ -73,7 +82,7 @@
 
     <!-- Quick stats -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <Card padding="sm">
         <p class="text-xs text-slate-500">Email 驗證</p>
         <p
           class="mt-1 text-lg font-semibold"
@@ -81,51 +90,35 @@
         >
           {{ emailVerified ? '✓ 已驗證' : '待驗證' }}
         </p>
-      </div>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      </Card>
+      <Card padding="sm">
         <p class="text-xs text-slate-500">已綁定登入方式</p>
         <p class="mt-1 text-lg font-semibold text-slate-900">
           {{ loadingMe ? '…' : providerCount + ' 個' }}
         </p>
-      </div>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      </Card>
+      <Card padding="sm">
         <p class="text-xs text-slate-500">最後登入</p>
         <p class="mt-1 text-sm font-medium text-slate-900">
           {{ loadingMe ? '…' : fmtDate(me?.last_login_at) }}
         </p>
-      </div>
+      </Card>
     </div>
 
     <!-- Quick actions -->
-    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+    <Card>
       <h2 class="text-lg font-semibold text-slate-900">快速操作</h2>
       <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <RouterLink
-          to="/me"
+          v-for="action in quickActions"
+          :key="action.to"
+          :to="action.to"
           class="rounded-md border border-slate-200 px-3 py-3 text-center text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-700"
         >
-          👤 我的資料
-        </RouterLink>
-        <RouterLink
-          to="/me/edit"
-          class="rounded-md border border-slate-200 px-3 py-3 text-center text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-700"
-        >
-          ✏️ 編輯資料
-        </RouterLink>
-        <RouterLink
-          to="/me/password"
-          class="rounded-md border border-slate-200 px-3 py-3 text-center text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-700"
-        >
-          🔑 更改密碼
-        </RouterLink>
-        <RouterLink
-          to="/me/sns"
-          class="rounded-md border border-slate-200 px-3 py-3 text-center text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-700"
-        >
-          🔌 綁定管理
+          {{ action.label }}
         </RouterLink>
       </div>
-    </div>
+    </Card>
 
     <!-- Debug panel (dev only) -->
     <details
