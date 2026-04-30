@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "eslint . --max-warnings=0 && npm run lint:tailwind",
     "lint:fix": "eslint . --fix",
+    "lint:tailwind": "node scripts/check-tailwind-duplication.mjs",
     "type-check": "vue-tsc --noEmit",
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@headlessui/vue": "^1.7.23",
     "@tailwindcss/vite": "^4.2.3",
     "@vueuse/core": "^14.2.1",
     "axios": "^1.15.1",
