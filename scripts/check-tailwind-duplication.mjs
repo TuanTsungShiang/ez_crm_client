@@ -181,7 +181,9 @@ function main() {
     }
     console.error('')
   }
-  console.error('修復方法: 抽成 src/components/ui/ primitive, 或拆 variant prop。詳見 ARCHITECTURE.md。')
+  console.error(
+    '修復方法: 抽成 src/components/ui/ primitive, 或拆 variant prop。詳見 ARCHITECTURE.md。',
+  )
   process.exit(1)
 }
 

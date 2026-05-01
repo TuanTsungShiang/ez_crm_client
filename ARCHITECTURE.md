@@ -12,6 +12,7 @@ ez_crm（後端）有 Filament 框架替紀律代勞 — 同樣的「複製貼�
 ez_crm_client（前端）沒有等價物。Vue 是 unopinionated 的，Tailwind 是 utility-first 的；兩者搭配給開發者極大自由度，但也意味著**反模式可以無聲長進專案**。
 
 跨專案審計（Linky360 → ez_crm → ez_crm_client）證實：
+
 - 後端在 Filament 保護下 30 天 0 個 anti-pattern 種子
 - 前端在 Vue + Tailwind 自由度下 9 天就出現 Linky360 等價形態的「Tailwind 字串複製」種子（14 處複製 form label class、12 處複製 form input class、5 處 form card、5 處 primary button 含 2 種 micro-divergence）
 
@@ -41,9 +42,11 @@ ez_crm_client（前端）沒有等價物。Vue 是 unopinionated 的，Tailwind 
 **例外**：純 layout class（`flex items-center gap-2`、`mt-6`、`grid grid-cols-2`）即使重複也可保留，因為它們語義是「位置」不是「樣式」。
 
 **判定方法**：
+
 ```bash
 grep -hoE 'class="[^"]{40,}"' src/views/*.vue src/components/*.vue | sort | uniq -c | sort -rn
 ```
+
 任何重複數 ≥3 的字串 = 違規。
 
 ---
@@ -55,6 +58,7 @@ grep -hoE 'class="[^"]{40,}"' src/views/*.vue src/components/*.vue | sort | uniq
 **理由**：超過 10 個 utility 表示這個元素已具備可獨立識別的視覺身份，應該成為 component。內聯堆疊只會讓 template 越讀越累，並且鼓勵下次再 copy-paste。
 
 **抽法**：
+
 - 純樣式 → atomic primitive（`<Button>`、`<Card>`、`<FormInput>`）
 - 含結構 → feature component
 - 變體多 → primitive + `variant` prop（≤ 5 種變體；超過代表設計太亂）
@@ -72,6 +76,7 @@ grep -hoE 'class="[^"]{40,}"' src/views/*.vue src/components/*.vue | sort | uniq
 - View 允許 `import type { AxiosError } from 'axios'`（純型別 import，無 runtime cost）
 
 **理由**：把 HTTP 細節集中在一處才能：
+
 - 統一 base URL、timeout、interceptor、token 注入、401 全域處理
 - API 變更時改一處不改 N 處
 - Test 時 mock 一個 layer 而不是 N 個 component
@@ -89,6 +94,7 @@ grep -hoE 'class="[^"]{40,}"' src/views/*.vue src/components/*.vue | sort | uniq
 - **Pinia store**（[src/stores/](src/stores/)）— 跨 view 共享的狀態
 
 **判定方法**：view 的 `<script setup>` 出現以下任一情況 = 候選違規：
+
 - 函式 ≥ 30 行
 - 同一段邏輯在 ≥ 2 個 view 重複（fmtDate、statusLabel 之類的 helper 是 hint）
 - 複雜的 reactive 計算（多層 `computed` / `watch`）
@@ -101,16 +107,19 @@ grep -hoE 'class="[^"]{40,}"' src/views/*.vue src/components/*.vue | sort | uniq
 ### 規矩 5：永續身份狀態走 Pinia，禁止在 component 內直接讀寫 localStorage
 
 **規定**：
+
 - **持久身份狀態**（token、會員資料、登入狀態）必須由 [src/stores/auth.ts](src/stores/auth.ts) 管理。component 不得直接 `localStorage.getItem('ez_crm_token')`。
 - **跨頁一次性 handoff**（`pending_verify_email` 等註冊流轉的 transient email）可用 `sessionStorage`，但生命週期限定為單次流程，使用後必須 `removeItem`。
 - **不允許**在 component 內 `window.X = Y` 寫全域變數，或自寫 EventBus / pubsub。跨 component 通訊：Pinia 或 props/emit。
 
 **理由**：散落的 localStorage 讀寫會：
+
 - 鍵名拼錯查不出來（`ez_crm_token` vs `ezcrm_token`）
 - token 過期 / 撤銷時清除點變多，遺漏一處就資料不一致
 - 跨分頁同步邏輯重複實作
 
 **現狀**：
+
 - [src/stores/auth.ts](src/stores/auth.ts) 已 hydrate from localStorage，並透過 storage event 跨分頁同步 — 這是唯一被允許讀寫 `ez_crm_token` / `ez_crm_member` 鍵的地方
 - [src/api/client.ts](src/api/client.ts) 在 401 時清除 localStorage — 這是唯一被允許清除身份 key 的地方（避免循環依賴）
 
@@ -146,6 +155,7 @@ src/
 ## 自動化護欄
 
 ### 已啟用
+
 - **TypeScript strict mode**（[tsconfig.json](tsconfig.json)）
 - **vue-tsc** type check（`npm run type-check` / build 時自動跑）
 - **ESLint** + **Prettier**（`npm run lint` / `npm run format`）
@@ -157,6 +167,7 @@ src/
 - **CI**（[.github/workflows/frontend.yml](.github/workflows/frontend.yml)：lint + type-check）
 
 ### 工具選型紀錄
+
 - `eslint-plugin-tailwindcss` 不適用：本專案用 Tailwind 4（CSS-first config，無 `tailwind.config.js`），該 plugin 對 v4 支援不完整
 - 自寫 ESLint rule 偵測跨檔重複工程成本高：ESLint 是 per-file linter，跨檔需自寫 multi-pass。改寫成獨立 Node script 串進 lint chain，更直接且跨平台（Windows / Linux CI 都能跑）
 
@@ -165,6 +176,7 @@ src/
 ## 變更本文件
 
 新增規矩前確認：
+
 1. 是否有實際 anti-pattern 案例佐證（不要憑直覺加）
 2. 是否能用 `grep` / ESLint rule 客觀判定（規矩需要可驗收）
 3. 是否與既有 5 條衝突或重疊
